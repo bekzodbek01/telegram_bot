@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Statistika{% endblock %}
+{% block content %}
+<div class="card chart-card">
+  <h2>Umumiy statistika</h2>
+  <canvas id="chart1" height="100"></canvas>
+</div>
+<script>
+  const c1 = document.getElementById('chart1');
+  new Chart(c1, {
+    type: 'bar',
+    data: {
+      labels: ['Misol 1','Misol 2','Misol 3'],
+      datasets: [{ label:'Ma'lumotlar', data: [3,9,4]}]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+</script>
+{% endblock %}

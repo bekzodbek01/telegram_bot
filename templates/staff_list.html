@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Staff ro'yxati{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Staff ro'yxati</h2>
+
+  <!-- ======== FULL RESET BUTTON ======== -->
+  <div style="margin: 10px 0;">
+    <button class="btn" style="background:#ef4444; color:white;" onclick="deleteAllData()">
+      🗑 Barcha ovozlarni tozalash
+    </button>
+  </div>
+  <!-- ======== END FULL RESET ======== -->
+
+  <!-- ======== SEARCH INPUTS ======== -->
+  <div style="display:flex; gap:10px; margin:15px 0;">
+    <input id="search_id" class="input" placeholder="ID" onkeyup="filterTable()">
+    <input id="search_name" class="input" placeholder="F.I.Sh" onkeyup="filterTable()">
+    <input id="search_position" class="input" placeholder="Lavozim" onkeyup="filterTable()">
+    <input id="search_region" class="input" placeholder="Hudud" onkeyup="filterTable()">
+  </div>
+  <!-- ======== END SEARCH ======== -->
+
+  <form method="post" action="/admin/staff" style="margin:12px 0;">
+    <div class="form-grid">
+      <div><label>ID</label><input type="number" name="staff_id" required></div>
+      <div><label>F.I.Sh</label><input type="text" name="name" required></div>
+      <div><label>Lavozim</label><input type="text" name="position" required></div>
+      <div><label>Hudud</label><input type="text" name="region" required></div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn" type="submit">+ Qo'shish</button>
+      <a class="btn secondary" href="/admin/export/excel">⬇ Excel (hammasi)</a>
+    </div>
+  </form>
+
+  <table id="staff-table" class="table">
+    <thead>
+      <tr>
+        <th>ID</th><th>F.I.Sh</th><th>Lavozim</th><th>Hudud</th>
+        <th>👍</th><th>👎</th><th>😐</th><th>Jami</th><th>Amal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.staff_id }}</td>
+        <td><a class="link" href="/admin/staff/{{ r.staff_id }}">{{ r.name }}</a></td>
+        <td>{{ r.position }}</td>
+        <td>{{ r.region }}</td>
+        <td>{{ r.likes }}</td>
+        <td>{{ r.dislikes }}</td>
+        <td>{{ r.neutrals }}</td>
+        <td>{{ r.total }}</td>
+        <td style="display:flex;gap:8px;">
+          <a class="btn gray" href="/admin/staff/{{ r.staff_id }}">Ko'rish</a>
+          <form method="post" action="/admin/staff/{{ r.staff_id }}/delete">
+            <button class="btn" style="background:#ef4444" onclick="return confirm('O‘chirish?')">O‘chirish</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card chart-card" style="margin-top:16px">
+  <h2>Umumiy statistika</h2>
+  <canvas id="totalChart" height="96"></canvas>
+</div>
+
+<script>
+  /* ======== FULL RESET FUNCTION ======== */
+  function deleteAllData() {
+    if (!confirm("⚠ DIQQAT! FAQAT BARCHA OVOZLAR O‘CHIRILADI!\nXodimlar o‘chmaydi. Davom ettirsinmi?")) {
+      return;
+    }
+
+    fetch("/admin/delete-all", { method: "DELETE" })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        location.reload();
+      })
+      .catch(err => alert("Xatolik: " + err));
+  }
+  /* ===================================== */
+
+  /* ======== LIVE TABLE SEARCH FUNCTION ======== */
+  function filterTable() {
+    const id = document.getElementById("search_id").value.toLowerCase();
+    const name = document.getElementById("search_name").value.toLowerCase();
+    const position = document.getElementById("search_position").value.toLowerCase();
+    const region = document.getElementById("search_region").value.toLowerCase();
+
+    const rows = document.querySelectorAll("#staff-table tbody tr");
+
+    rows.forEach(row => {
+      const td_id = row.children[0].textContent.toLowerCase();
+      const td_name = row.children[1].textContent.toLowerCase();
+      const td_pos = row.children[2].textContent.toLowerCase();
+      const td_reg = row.children[3].textContent.toLowerCase();
+
+      const match =
+        td_id.includes(id) &&
+        td_name.includes(name) &&
+        td_pos.includes(position) &&
+        td_reg.includes(region);
+
+      row.style.display = match ? "" : "none";
+    });
+  }
+  /* ============================================ */
+
+  const totals = {
+    likes: {{ rows|map(attribute='likes')|sum }},
+    dislikes: {{ rows|map(attribute='dislikes')|sum }},
+    neutrals: {{ rows|map(attribute='neutrals')|sum }}
+  };
+  const ctx = document.getElementById('totalChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['👍 Yaxshi', '👎 Yomon', '😐 Neytral'],
+      datasets: [{
+        label: 'Jami ovozlar',
+        data: [totals.likes, totals.dislikes, totals.neutrals]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+
+{% endblock %}

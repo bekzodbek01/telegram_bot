@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}{{ name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>{{ name }} — {{ position }}</h2>
+  <p style="color:#475569; margin-top:-6px;">
+    ID: {{ staff_id }} · Hudud: {{ region }}
+  </p>
+
+  <!-- Tugmalar -->
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+    <a class="btn" href="/admin/staff/{{ staff_id }}/qr">⬇ QR</a>
+    <a class="btn secondary" href="/admin/staff/{{ staff_id }}/excel">⬇ Excel</a>
+    <a class="btn gray" target="_blank"
+       href="https://t.me/{{ bot_username }}?start=staff_{{ staff_id }}">
+       🔗 Botga havola
+    </a>
+  </div>
+
+  <!-- Statistikalar -->
+  <div style="display:flex; gap:16px; margin-top:16px; flex-wrap:wrap;">
+    <span class="badge ok">👍 {{ stats.likes }}</span>
+    <span class="badge warn">👎 {{ stats.dislikes }}</span>
+    <span class="badge" style="background:#e2e8f0;color:#0f172a;">😐 {{ stats.neutrals }}</span>
+    <span class="badge" style="background:#dbeafe;color:#1e40af;">Jami: {{ stats.total }}</span>
+  </div>
+
+  <!-- ⭐ Oyni tanlab O‘CHIRISH -->
+  <form method="post" action="/admin/staff/{{ staff_id }}/reset/month"
+        style="margin-top:25px; display:flex; gap:10px; flex-wrap:wrap;">
+
+    <!-- Oy (nomlar bilan) -->
+    <select name="month" required
+      style="padding:8px 12px; border-radius:8px; border:1px solid #ccc; font-size:15px;">
+      <option value="">Oy</option>
+      <option value="1">Yanvar</option>
+      <option value="2">Fevral</option>
+      <option value="3">Mart</option>
+      <option value="4">Aprel</option>
+      <option value="5">May</option>
+      <option value="6">Iyun</option>
+      <option value="7">Iyul</option>
+      <option value="8">Avgust</option>
+      <option value="9">Sentabr</option>
+      <option value="10">Oktabr</option>
+      <option value="11">Noyabr</option>
+      <option value="12">Dekabr</option>
+    </select>
+
+    <!-- Yil -->
+    <select name="year" required
+      style="padding:8px 12px; border-radius:8px; border:1px solid #ccc; font-size:15px;">
+      <option value="">Yil</option>
+      <option value="{{ now_year }}">{{ now_year }}</option>
+      <option value="{{ now_year - 1 }}">{{ now_year - 1 }}</option>
+    </select>
+
+    <button style="background:#dc2626;color:white;
+        padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
+      🗑 Tanlangan oy baholarini o‘chirish
+    </button>
+  </form>
+
+  <!-- ⭐ OY/YIL bo‘yicha EXCEL chiqarish -->
+  <form method="get" action="/admin/staff/{{ staff_id }}/excel"
+        style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+
+    <input type="hidden" name="month" id="excel_month">
+    <input type="hidden" name="year" id="excel_year">
+
+    <button type="submit"
+      onclick="
+        document.getElementById('excel_month').value =
+            document.querySelector('select[name=month]').value;
+        document.getElementById('excel_year').value =
+            document.querySelector('select[name=year]').value;
+      "
+      style="background:#2563eb; color:white;
+            padding:10px 20px; border:none;
+            border-radius:10px; cursor:pointer;">
+        📘 Tanlangan oy → Excel chiqarish
+    </button>
+  </form>
+
+  <!-- ⭐ Faqat shu xodimning barcha bahosini o‘chirish -->
+  <form method="post" action="/admin/staff/{{ staff_id }}/reset/all"
+        style="margin-top:12px;">
+    <button style="background:#7f1d1d;color:white;padding:10px 20px;
+           border:none;border-radius:10px;cursor:pointer;">
+      🗑 Barcha ovozlarini o‘chirish
+    </button>
+  </form>
+</div>
+
+<!-- CHART -->
+<div class="card chart-card" style="margin-top:16px; text-align:center;">
+  <h2>Ovozlar taqsimoti</h2>
+
+  <div style="max-width: 260px; margin: 0 auto;">
+    <canvas id="pieChart" width="260" height="260"></canvas>
+  </div>
+</div>
+
+<script>
+  const ctx2 = document.getElementById('pieChart');
+  new Chart(ctx2, {
+    type: 'pie',
+    data: {
+      labels: ['👍 Yaxshi', '👎 Yomon', '😐 Neytral'],
+      datasets: [{
+        data: [{{ stats.likes }}, {{ stats.dislikes }}, {{ stats.neutrals }}],
+        backgroundColor: ['#22c55e', '#ef4444', '#eab308']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+</script>
+
+{% endblock %}

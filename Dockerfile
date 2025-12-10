@@ -2,8 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y \
+    supervisor \
+    libgl1 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . /app/
 
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-CMD ["python", "run.py"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -2,15 +2,14 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y build-essential libgl1 && \
+RUN apt-get update && apt-get install -y supervisor && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-ENV PORT=8000
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-CMD ["supervisord", "-c", "/app/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-n"]

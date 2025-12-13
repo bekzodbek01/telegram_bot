@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+
+  fastapi:
+    build: .
+    container_name: senbaholash_fastapi
+    restart: always
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+    environment:
+      ADMIN_USER: ${ADMIN_USER}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      BOT_USERNAME: ${BOT_USERNAME}
+
+  nginx:
+    image: nginx:latest
+    container_name: senbaholash_nginx
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./app/static:/app/app/static
+    depends_on:
+      - fastapi

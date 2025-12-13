@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Tahrirlash{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Xodimni tahrirlash</h2>
+
+  <form method="post" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+
+    <label>ID</label>
+    <input type="text" value="{{ staff.id }}" disabled
+        style="padding:10px; border-radius:10px; border:1px solid #cbd5e1; background:#f1f5f9;">
+
+    <label>F.I.Sh</label>
+    <input name="name" value="{{ staff.name }}"
+        style="padding:10px; border-radius:10px; border:1px solid #cbd5e1;">
+
+    <label>Lavozim</label>
+    <input name="position" value="{{ staff.position }}"
+        style="padding:10px; border-radius:10px; border:1px solid #cbd5e1;">
+
+    <label>Hudud</label>
+    <input name="region" value="{{ staff.region }}"
+        style="padding:10px; border-radius:10px; border:1px solid #cbd5e1;">
+
+    <button
+      style="
+        margin-top:15px;
+        background:#2563eb;
+        color:white;
+        padding:12px 20px;
+        border:none;
+        border-radius:10px;
+        cursor:pointer;
+        font-weight:600;
+        height:45px;
+      ">
+      💾 Saqlash
+    </button>
+
+  </form>
+
+  <!-- 🔙 ORQAGA TUGMASI — ko‘rish/tahrirlash/o‘chirish tugmalari bilan bir xil -->
+  <a href="/admin/staff/{{ staff.id }}"
+     style="
+       display:inline-flex;
+       align-items:center;
+       justify-content:center;
+       padding:10px 18px;
+       background:#64748b;
+       color:white;
+       border-radius:10px;
+       font-size:14px;
+       font-weight:600;
+       text-decoration:none;
+       min-width:130px;
+       height:42px;
+       margin-top:15px;
+     ">
+    ← Orqaga
+  </a>
+
+</div>
+
+{% endblock %}

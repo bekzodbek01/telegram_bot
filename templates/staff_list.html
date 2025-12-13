@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Staff ro'yxati{% endblock %}
 {% block content %}
+
 <div class="card">
-  <h2>Staff ro'yxati</h2>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>Staff ro'yxati</h2>
+  </div>
 
   <!-- ======== FULL RESET BUTTON ======== -->
   <div style="margin: 10px 0;">
-    <button class="btn" style="background:#ef4444; color:white;" onclick="deleteAllData()">
-      🗑 Barcha ovozlarni tozalash
-    </button>
+      <form action="/admin/reset-votes" method="post"
+            onsubmit="return confirm('Barcha ovozlarni o‘chirishni xohlaysizmi?')"
+            style="display:inline;">
+          <button class="btn" type="submit" style="background:#ef4444; color:white;">
+              🗑 Barcha ovozlarni tozalash
+          </button>
+      </form>
   </div>
   <!-- ======== END FULL RESET ======== -->
 
@@ -21,6 +29,7 @@
   </div>
   <!-- ======== END SEARCH ======== -->
 
+  <!-- ADD STAFF FORM -->
   <form method="post" action="/admin/staff" style="margin:12px 0;">
     <div class="form-grid">
       <div><label>ID</label><input type="number" name="staff_id" required></div>
@@ -34,6 +43,7 @@
     </div>
   </form>
 
+  <!-- TABLE -->
   <table id="staff-table" class="table">
     <thead>
       <tr>
@@ -52,41 +62,82 @@
         <td>{{ r.dislikes }}</td>
         <td>{{ r.neutrals }}</td>
         <td>{{ r.total }}</td>
-        <td style="display:flex;gap:8px;">
-          <a class="btn gray" href="/admin/staff/{{ r.staff_id }}">Ko'rish</a>
-          <form method="post" action="/admin/staff/{{ r.staff_id }}/delete">
-            <button class="btn" style="background:#ef4444" onclick="return confirm('O‘chirish?')">O‘chirish</button>
-          </form>
-        </td>
+<td style="display:flex; gap:8px;">
+
+    <!-- ✏️ TAHRIRLASH -->
+    <a href="/admin/staff/{{ r.staff_id }}/edit"
+       style="
+           display:flex;
+           align-items:center;
+           gap:5px;
+           padding:8px 14px;
+           background:#0ea5e9;
+           color:white;
+           border-radius:8px;
+           font-size:13px;
+           font-weight:600;
+           text-decoration:none;
+       ">
+        ✏️ <span>Tahrir</span>
+    </a>
+
+    <!-- 👁 KO‘RISH -->
+    <a href="/admin/staff/{{ r.staff_id }}"
+       style="
+           display:flex;
+           align-items:center;
+           gap:5px;
+           padding:8px 14px;
+           background:#64748b;
+           color:white;
+           border-radius:8px;
+           font-size:13px;
+           font-weight:600;
+           text-decoration:none;
+       ">
+        👁 <span>Ko‘rish</span>
+    </a>
+
+    <!-- 🗑 O‘CHIRISH -->
+    <form method="post" action="/admin/staff/{{ r.staff_id }}/delete">
+        <button
+           style="
+               display:flex;
+               align-items:center;
+               gap:5px;
+               padding:8px 14px;
+               background:#ef4444;
+               color:white;
+               border:none;
+               border-radius:8px;
+               font-size:13px;
+               font-weight:600;
+               cursor:pointer;
+           "
+           onclick="return confirm('O‘chirishni istaysizmi?')">
+            🗑 <span>O‘chirish</span>
+        </button>
+    </form>
+
+</td>
+
+
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
+
+<!-- CHART CARD -->
 <div class="card chart-card" style="margin-top:16px">
   <h2>Umumiy statistika</h2>
   <canvas id="totalChart" height="96"></canvas>
 </div>
 
+
 <script>
-  /* ======== FULL RESET FUNCTION ======== */
-  function deleteAllData() {
-    if (!confirm("⚠ DIQQAT! FAQAT BARCHA OVOZLAR O‘CHIRILADI!\nXodimlar o‘chmaydi. Davom ettirsinmi?")) {
-      return;
-    }
-
-    fetch("/admin/delete-all", { method: "DELETE" })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        location.reload();
-      })
-      .catch(err => alert("Xatolik: " + err));
-  }
-  /* ===================================== */
-
-  /* ======== LIVE TABLE SEARCH FUNCTION ======== */
+  /* ======== SEARCH FILTER ======== */
   function filterTable() {
     const id = document.getElementById("search_id").value.toLowerCase();
     const name = document.getElementById("search_name").value.toLowerCase();
@@ -110,13 +161,15 @@
       row.style.display = match ? "" : "none";
     });
   }
-  /* ============================================ */
 
+
+  /* ======== BAR CHART ======== */
   const totals = {
     likes: {{ rows|map(attribute='likes')|sum }},
     dislikes: {{ rows|map(attribute='dislikes')|sum }},
     neutrals: {{ rows|map(attribute='neutrals')|sum }}
   };
+
   const ctx = document.getElementById('totalChart');
   new Chart(ctx, {
     type: 'bar',

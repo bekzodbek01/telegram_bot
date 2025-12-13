@@ -1,14 +1,31 @@
 import subprocess
 import time
 
-# FastAPI ni ishga tushiramiz
-fastapi = subprocess.Popen(["uvicorn", "main:app", "--port", "8001"])
+def start_fastapi():
+    return subprocess.Popen(
+        ["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8001"]
+    )
 
-# Telegram botni ishga tushiramiz
-time.sleep(2)  # server ko‘tarilishini kutish
-bot = subprocess.Popen(["python", "bot.py"])
+def start_bot():
+    return subprocess.Popen(["python", "bot.py"])
 
-print("FastAPI + Telegram bot birga ishlayapti!")
+if __name__ == "__main__":
+    print("⏳ FastAPI ishga tushirilmoqda...")
+    fastapi = start_fastapi()
 
-fastapi.wait()
-bot.wait()
+    time.sleep(2)
+
+    print("🤖 Telegram bot ishga tushirilmoqda...")
+    bot = start_bot()
+
+    print("🚀 FastAPI + Telegram bot birga ishlayapti!")
+    print("\n🟦 ADMIN PANELGA KIRISH:")
+    print("👉 http://127.0.0.1:8001/admin/staffs\n")
+
+    try:
+        fastapi.wait()
+        bot.wait()
+    except KeyboardInterrupt:
+        print("\n⛔ Dastur to‘xtatildi!")
+        fastapi.terminate()
+        bot.terminate()

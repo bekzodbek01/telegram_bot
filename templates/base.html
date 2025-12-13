@@ -13,10 +13,14 @@
   <div class="navbar">
     <div class="brand">🏦 SenBaholash — Admin</div>
     <div>
-      <a class="link" href="/admin/staffs" style="color:#fff;margin-right:16px;">Staff</a>
+      <!-- 🔐 Staff o‘rniga Parol o‘zgartirish qo‘yildi -->
+      <a class="link" href="/admin/change-password" style="color:#fff;margin-right:16px;">
+        🔑 Parolni o‘zgartirish
+      </a>
       <a class="link" href="/logout" style="color:#fff;">Chiqish</a>
     </div>
   </div>
+
   <div class="container">
     {% block content %}{% endblock %}
     <div class="footer">© 2025 Raqamli Laboratoriya — Blue corporate UI</div>

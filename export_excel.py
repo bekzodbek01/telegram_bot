@@ -1,4 +1,6 @@
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment
 from pathlib import Path
 from datetime import datetime
 from db import (
@@ -12,7 +14,35 @@ EXPORT_DIR = Path("exports")
 EXPORT_DIR.mkdir(exist_ok=True)
 
 
-# ------------------ EXPORT ALL STAFF ------------------
+# ======================= SET COLUMN WIDTHS =======================
+
+def set_column_widths(ws):
+    widths = {
+        1: 7,     # ID
+        2: 13,     # Name
+        3: 30,     # Position
+        4: 13,     # Region
+        5: 6,     # Likes
+        6: 6,     # Dislikes
+        7: 6,     # Neutrals
+        8: 6,     # Total
+        9: 10,     # Date
+        10: 10,    # Month
+        11: 6     # Year
+    }
+    for col, width in widths.items():
+        ws.column_dimensions[get_column_letter(col)].width = width
+
+
+# ======================= STYLE HEADER =======================
+
+def style_header(ws):
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center")
+
+
+# ======================= EXPORT ALL STAFF =======================
 
 def export_excel():
     wb = Workbook()
@@ -24,6 +54,9 @@ def export_excel():
         "Likes", "Dislikes", "Neutrals", "Total",
         "Date", "Month", "Year"
     ])
+
+    set_column_widths(ws)
+    style_header(ws)
 
     now = datetime.now()
     date_str = now.strftime("%d.%m.%Y")
@@ -52,7 +85,7 @@ def export_excel():
     return str(filename)
 
 
-# ------------------ EXPORT ONE STAFF ------------------
+# ======================= EXPORT ONE STAFF =======================
 
 def export_one_staff_excel(staff_id: int):
     wb = Workbook()
@@ -64,6 +97,9 @@ def export_one_staff_excel(staff_id: int):
         "Likes", "Dislikes", "Neutrals", "Total",
         "Date", "Month", "Year"
     ])
+
+    set_column_widths(ws)
+    style_header(ws)
 
     now = datetime.now()
     date_str = now.strftime("%d.%m.%Y")
@@ -100,12 +136,9 @@ def export_one_staff_excel(staff_id: int):
     return str(filename)
 
 
-# ------------------ EXPORT MONTH/YEAR STATS ------------------
+# ======================= EXPORT MONTH/YEAR REPORT =======================
 
 def export_month_excel(year: int, month: int):
-    """
-    Berilgan oy va yil bo‘yicha barcha xodimlar bo‘yicha Excel chiqaradi.
-    """
     wb = Workbook()
     ws = wb.active
     ws.title = f"{month}_{year}"
@@ -115,6 +148,9 @@ def export_month_excel(year: int, month: int):
         "Likes", "Dislikes", "Neutrals", "Total",
         "Month", "Year"
     ])
+
+    set_column_widths(ws)
+    style_header(ws)
 
     month_stats = get_month_stats(year, month)
 

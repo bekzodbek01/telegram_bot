@@ -9,10 +9,10 @@
 
   <!-- Tugmalar -->
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
-    <a class="btn" href="/admin/staff/{{ staff_id }}/qr">⬇ QR</a>
+      <a class="btn" href="/admin/staff/{{ staff_id }}/qr-view">👁 QR Korish</a>
     <a class="btn secondary" href="/admin/staff/{{ staff_id }}/excel">⬇ Excel</a>
     <a class="btn gray" target="_blank"
-       href="https://t.me/{{ bot_username }}?start=staff_{{ staff_id }}">
+        href="https://t.me/{{ bot_username }}?start=staff_{{ staff_id }}">
        🔗 Botga havola
     </a>
   </div>
@@ -25,71 +25,79 @@
     <span class="badge" style="background:#dbeafe;color:#1e40af;">Jami: {{ stats.total }}</span>
   </div>
 
-  <!-- ⭐ Oyni tanlab O‘CHIRISH -->
-  <form method="post" action="/admin/staff/{{ staff_id }}/reset/month"
-        style="margin-top:25px; display:flex; gap:10px; flex-wrap:wrap;">
 
-    <!-- Oy (nomlar bilan) -->
-    <select name="month" required
-      style="padding:8px 12px; border-radius:8px; border:1px solid #ccc; font-size:15px;">
-      <option value="">Oy</option>
-      <option value="1">Yanvar</option>
-      <option value="2">Fevral</option>
-      <option value="3">Mart</option>
-      <option value="4">Aprel</option>
-      <option value="5">May</option>
-      <option value="6">Iyun</option>
-      <option value="7">Iyul</option>
-      <option value="8">Avgust</option>
-      <option value="9">Sentabr</option>
-      <option value="10">Oktabr</option>
-      <option value="11">Noyabr</option>
-      <option value="12">Dekabr</option>
-    </select>
+  <!-- ⭐ OY/YIL TANLASH BLOKI -->
+  <div style="margin-top:25px;">
 
-    <!-- Yil -->
-    <select name="year" required
-      style="padding:8px 12px; border-radius:8px; border:1px solid #ccc; font-size:15px;">
-      <option value="">Yil</option>
-      <option value="{{ now_year }}">{{ now_year }}</option>
-      <option value="{{ now_year - 1 }}">{{ now_year - 1 }}</option>
-    </select>
+      <!-- Oyni tanlash -->
+      <label><b>Oy</b></label>
+      <select id="month_select"
+          style="padding:8px 12px;border-radius:8px;border:1px solid #ccc;font-size:15px;">
+          {% for m in [
+            (1,"Yanvar"),(2,"Fevral"),(3,"Mart"),(4,"Aprel"),(5,"May"),(6,"Iyun"),
+            (7,"Iyul"),(8,"Avgust"),(9,"Sentabr"),(10,"Oktabr"),(11,"Noyabr"),(12,"Dekabr")
+          ] %}
+          <option value="{{ m[0] }}"
+                {% if m[0] == now_month %}selected{% endif %}>
+              {{ m[1] }}
+          </option>
+          {% endfor %}
+      </select>
 
-    <button style="background:#dc2626;color:white;
-        padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
-      🗑 Tanlangan oy baholarini o‘chirish
-    </button>
-  </form>
+      <!-- Yilni tanlash -->
+      <label class="mt-3"><b>Yil</b></label>
+      <select id="year_select"
+          style="padding:8px 12px;border-radius:8px;border:1px solid #ccc;font-size:15px;">
+          {% for y in range(now_year-1, now_year+2) %}
+          <option value="{{ y }}"
+                {% if y == now_year %}selected{% endif %}>
+              {{ y }}
+          </option>
+          {% endfor %}
+      </select>
 
-  <!-- ⭐ OY/YIL bo‘yicha EXCEL chiqarish -->
-  <form method="get" action="/admin/staff/{{ staff_id }}/excel"
-        style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+      <!-- ⭐ Tanlangan oy bo‘yicha o‘chirish -->
+      <form method="post"
+            action="/admin/staff/{{ staff_id }}/reset/month"
+            style="margin-top:12px;">
+          <input type="hidden" name="month" id="del_month">
+          <input type="hidden" name="year" id="del_year">
 
-    <input type="hidden" name="month" id="excel_month">
-    <input type="hidden" name="year" id="excel_year">
+          <button class="btn danger w-100"
+              onclick="
+                    document.getElementById('del_month').value =
+                        document.getElementById('month_select').value;
+                    document.getElementById('del_year').value =
+                        document.getElementById('year_select').value;
+              ">
+              🗑 Tanlangan oy baholarini o‘chirish
+          </button>
+      </form>
 
-    <button type="submit"
-      onclick="
-        document.getElementById('excel_month').value =
-            document.querySelector('select[name=month]').value;
-        document.getElementById('excel_year').value =
-            document.querySelector('select[name=year]').value;
-      "
-      style="background:#2563eb; color:white;
-            padding:10px 20px; border:none;
-            border-radius:10px; cursor:pointer;">
-        📘 Tanlangan oy → Excel chiqarish
-    </button>
-  </form>
+      <!-- ⭐ Tanlangan oy bo‘yicha Excel chiqarish -->
+      <form method="get" id="excel_form"
+            style="margin-top:10px;">
+          <button type="button"
+              onclick="
+                let m = document.getElementById('month_select').value;
+                let y = document.getElementById('year_select').value;
+                window.location = '/admin/export/excel/month?month='+m+'&year='+y;
+              "
+              class="btn primary w-100">
+              📘 Tanlangan oy → Excel chiqarish
+          </button>
+      </form>
 
-  <!-- ⭐ Faqat shu xodimning barcha bahosini o‘chirish -->
-  <form method="post" action="/admin/staff/{{ staff_id }}/reset/all"
-        style="margin-top:12px;">
-    <button style="background:#7f1d1d;color:white;padding:10px 20px;
-           border:none;border-radius:10px;cursor:pointer;">
-      🗑 Barcha ovozlarini o‘chirish
-    </button>
-  </form>
+      <!-- ⭐ Barcha ovozlarni o‘chirish -->
+      <form method="post"
+            action="/admin/staff/{{ staff_id }}/reset/all"
+            style="margin-top:12px;">
+          <button class="btn dark w-100">
+              🗑 Barcha ovozlarini o‘chirish
+          </button>
+      </form>
+
+  </div>
 </div>
 
 <!-- CHART -->

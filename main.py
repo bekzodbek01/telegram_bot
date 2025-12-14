@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import RedirectResponse, FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from dotenv import dotenv_values, set_key
+from dotenv import dotenv_values
 
 from db import (
     init_db, add_staff, delete_staff, list_staff,
@@ -25,6 +25,9 @@ env_data = dotenv_values(ENV_PATH)
 ADMIN_USER = env_data.get("ADMIN_USER", "admin")
 ADMIN_PASSWORD = env_data.get("ADMIN_PASSWORD", "admin123")
 BOT_USERNAME = env_data.get("BOT_USERNAME", "SenBaholash_bot")
+
+# ===================== EXCEL MIME-TYPE =====================
+EXCEL_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 # ===================== APP =====================
 app = FastAPI(title="SenBaholash Admin", docs_url=None, redoc_url=None)
@@ -110,7 +113,8 @@ async def staff_list(request: Request, q: str = ""):
 
 # ===================== STAFF ADD =====================
 @app.post("/admin/staff")
-async def staff_add(request: Request,
+async def staff_add(
+    request: Request,
     staff_id: int = Form(...),
     name: str = Form(...),
     position: str = Form(...),
@@ -214,14 +218,19 @@ async def staff_qr_view(request: Request, staff_id: int):
     return HTMLResponse(tpl.render(qr_file=qr_file))
 
 
-# ===================== EXCEL EXPORT =====================
+# ===================== EXCEL EXPORT (ZIP MUAMMO YO‘Q) =====================
 @app.get("/admin/staff/{staff_id}/excel")
 async def staff_excel_one(request: Request, staff_id: int):
     if not is_authed(request):
         return RedirectResponse("/", 303)
 
     filename = export_one_staff_excel(staff_id)
-    return FileResponse(filename)
+
+    return FileResponse(
+        filename,
+        media_type=EXCEL_TYPE,
+        filename=os.path.basename(filename)
+    )
 
 
 @app.get("/admin/export/excel")
@@ -230,7 +239,12 @@ async def staff_excel(request: Request):
         return RedirectResponse("/", 303)
 
     filename = export_excel()
-    return FileResponse(filename)
+
+    return FileResponse(
+        filename,
+        media_type=EXCEL_TYPE,
+        filename=os.path.basename(filename)
+    )
 
 
 @app.get("/admin/export/excel/month")
@@ -239,7 +253,12 @@ async def export_month(request: Request, year: int, month: int):
         return RedirectResponse("/", 303)
 
     filename = export_month_excel(year, month)
-    return FileResponse(filename)
+
+    return FileResponse(
+        filename,
+        media_type=EXCEL_TYPE,
+        filename=os.path.basename(filename)
+    )
 
 
 # ===================== VOTE =====================

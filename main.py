@@ -218,7 +218,7 @@ async def staff_qr_view(request: Request, staff_id: int):
     return HTMLResponse(tpl.render(qr_file=qr_file))
 
 
-# ===================== EXCEL EXPORT (ZIP MUAMMO YO‘Q) =====================
+# ===================== EXCEL EXPORT =====================
 @app.get("/admin/staff/{staff_id}/excel")
 async def staff_excel_one(request: Request, staff_id: int):
     if not is_authed(request):
@@ -261,7 +261,32 @@ async def export_month(request: Request, year: int, month: int):
     )
 
 
-# ===================== VOTE =====================
+# ===================== DELETE ONE STAFF MONTH VOTES =====================
+@app.post("/admin/staff/{staff_id}/delete-month")
+async def delete_month_votes(
+    request: Request,
+    staff_id: int,
+    year: int = Form(...),
+    month: int = Form(...)
+):
+    if not is_authed(request):
+        return RedirectResponse("/", 303)
+
+    delete_staff_month_votes(staff_id, year, month)
+    return RedirectResponse(f"/admin/staff/{staff_id}", 303)
+
+
+# ===================== DELETE ALL VOTES FOR ONE STAFF =====================
+@app.post("/admin/staff/{staff_id}/delete-all-votes")
+async def delete_all_votes_for_this_staff(request: Request, staff_id: int):
+    if not is_authed(request):
+        return RedirectResponse("/", 303)
+
+    delete_all_votes_for_staff(staff_id)
+    return RedirectResponse(f"/admin/staff/{staff_id}", 303)
+
+
+# ===================== VOTE SYSTEM =====================
 @app.get("/vote/{staff_id}/{kind}")
 async def vote_demo(staff_id: int, kind: str):
     if kind not in {"like", "dislike", "neutral"}:
@@ -271,7 +296,7 @@ async def vote_demo(staff_id: int, kind: str):
     return {"ok": True}
 
 
-# ===================== DELETE ALL VOTES =====================
+# ===================== DELETE ALL VOTES (GLOBAL) =====================
 @app.post("/admin/reset-votes")
 async def reset_votes(request: Request):
     if not is_authed(request):

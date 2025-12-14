@@ -26,7 +26,7 @@ ADMIN_USER = env_data.get("ADMIN_USER", "admin")
 ADMIN_PASSWORD = env_data.get("ADMIN_PASSWORD", "admin123")
 BOT_USERNAME = env_data.get("BOT_USERNAME", "SenBaholash_bot")
 
-# ===================== EXCEL MIME-TYPE =====================
+# Excel fayl MIME-Type - ZIP bo‘lib ketmasligi uchun
 EXCEL_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 # ===================== APP =====================
@@ -40,7 +40,6 @@ templates = Environment(
     loader=FileSystemLoader("templates"),
     autoescape=select_autoescape(["html"])
 )
-
 
 # ===================== AUTH =====================
 def is_authed(request: Request) -> bool:
@@ -211,8 +210,7 @@ async def staff_qr_view(request: Request, staff_id: int):
     if not is_authed(request):
         return RedirectResponse("/", 303)
 
-    qr_file = make_qr_for_staff(staff_id, BOT_USERNAME)
-    qr_file = "/" + qr_file
+    qr_file = "/" + make_qr_for_staff(staff_id, BOT_USERNAME)
 
     tpl = templates.get_template("qr_view.html")
     return HTMLResponse(tpl.render(qr_file=qr_file))
@@ -262,13 +260,10 @@ async def export_month(request: Request, year: int, month: int):
 
 
 # ===================== DELETE ONE STAFF MONTH VOTES =====================
-@app.post("/admin/staff/{staff_id}/delete-month")
-async def delete_month_votes(
-    request: Request,
-    staff_id: int,
-    year: int = Form(...),
-    month: int = Form(...)
-):
+@app.post("/admin/staff/{staff_id}/reset/month")
+async def reset_staff_month(request: Request, staff_id: int,
+                            month: int = Form(...),
+                            year: int = Form(...)):
     if not is_authed(request):
         return RedirectResponse("/", 303)
 
@@ -276,8 +271,8 @@ async def delete_month_votes(
     return RedirectResponse(f"/admin/staff/{staff_id}", 303)
 
 
-# ===================== DELETE ALL VOTES FOR ONE STAFF =====================
-@app.post("/admin/staff/{staff_id}/delete-all-votes")
+# ===================== DELETE ALL VOTES (ONLY THIS STAFF) =====================
+@app.post("/admin/staff/{staff_id}/reset/all")
 async def delete_all_votes_for_this_staff(request: Request, staff_id: int):
     if not is_authed(request):
         return RedirectResponse("/", 303)
@@ -286,7 +281,7 @@ async def delete_all_votes_for_this_staff(request: Request, staff_id: int):
     return RedirectResponse(f"/admin/staff/{staff_id}", 303)
 
 
-# ===================== VOTE SYSTEM =====================
+# ===================== VOTE =====================
 @app.get("/vote/{staff_id}/{kind}")
 async def vote_demo(staff_id: int, kind: str):
     if kind not in {"like", "dislike", "neutral"}:
